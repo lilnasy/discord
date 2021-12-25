@@ -4,10 +4,10 @@ import  { Embed
         , InteractionResponseData
         } from './types.ts'
 
-function content (text: string): InteractionResponseData {
-	return { content: text }
+function content (text: string) {
+	return <InteractionResponseData> { content: text }
 }
 
-function embed (embed: Embed): InteractionResponseData {
-	return { embeds: [ embed ] }
+function embed (embed: Embed) {
+	return <InteractionResponseData> { embeds: [ embed ] }
 }

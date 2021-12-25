@@ -6,22 +6,30 @@ import	{ Authorization
 	, OptionType } from './types.ts'
 
 // the function 'getAccessToken' uses credentials to get a code needed to register commands
-async function Authorize (ClientID: string, ClientSecret: string): Promise<Authorization> {
+async function Authorize (
+	clientID: string,
+	clientSecret: string
+) {
+
 	const response = await fetch( 'https://discord.com/api/v9/' + 'oauth2/token', {
 		method: 'POST',
 		body: 'grant_type=client_credentials&scope=applications.commands.update',
 		headers: {
 			'Content-Type': "application/x-www-form-urlencoded",
-			'Authorization': 'Basic ' + btoa( ClientID + ':' + ClientSecret )
+			'Authorization': 'Basic ' + btoa( clientID + ':' + clientSecret )
 		}
 	})
 	
-	if (response.ok) response.json()
+	if (response.ok) return <Authorization> await response.json()
 	return Promise.reject( await response.text() )
 }
 
 // the function 'registerCommand' gives details of a command to discord 
-async function RegisterCommand (applicationID: string, accessToken: string, command: Command): Promise<CommandRegistration> {
+async function RegisterCommand (
+	applicationID: string,
+	accessToken: string,
+	command: Command
+) {
 
 	// transform the simple choices (if there are some) into discord's command options structure
 	const choices =
@@ -45,6 +53,6 @@ async function RegisterCommand (applicationID: string, accessToken: string, comm
 				'Authorization': 'Bearer ' + accessToken }
 		})
 	
-	if (response.ok) return response.json()
+	if (response.ok) return <CommandRegistration> await response.json()
 	return Promise.reject( await response.text() )
 }

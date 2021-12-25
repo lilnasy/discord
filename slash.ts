@@ -2,12 +2,12 @@ export { slash }
 
 import { Command } from './types.ts'
 
-import { routeInteraction } from './router.ts'
+import { route } from './router.ts'
 
-import { verifySignature } from './verify.ts'
+import { verify } from './noble-ed25519/index.ts'
 
 /**
- * requests containing interactions,
+ * handler for requests containing discord interactions:
  * verifies their signatures, routes them to the matching command
  * and returns responses containing interaction responses
  * @param publicKey the public key against which interactions will be verified
@@ -16,7 +16,7 @@ import { verifySignature } from './verify.ts'
  * */
 function slash (publicKey: string, commands: Array<Command>) {
 
-	const router = routeInteraction(commands)
+	const router = route(commands)
 
 	// see if the interaction is signed for this app
 	// if verification passed, respond using interaction handler
@@ -27,7 +27,7 @@ function slash (publicKey: string, commands: Array<Command>) {
 		
 		const interaction	= await request.text()
 		
-		const verified		= await verifySignature(publicKey, signature, interaction)
+		const verified		= await verify(signature, signature + interaction, publicKey).catch( _ => false )
 		
 		if (verified) return new Response(
 			JSON.stringify( router( JSON.parse(interaction) ) ),

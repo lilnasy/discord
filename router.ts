@@ -1,4 +1,4 @@
-export { routeInteraction }
+export { route }
 
 import { content } from './interactions.ts'
 
@@ -12,7 +12,7 @@ import  { Command
 	, InteractionResponseData
 	} from './types.ts'
 
-function routeInteraction (commands: Array<Command>) {
+function route (commands: Array<Command>) {
 	
 	return (interaction: Interaction): InteractionResponse => {
 
@@ -91,7 +91,7 @@ function routeInteraction (commands: Array<Command>) {
 
 const defaultCommand: Command = {
 	name		: 'unknown command',
-	description	: `this gets used when the interaction sent by discord isn't intended for any of commands provided to 'routeInteraction'`,
+	description	: `this gets used when the interaction sent by discord isn't intended for any of commands provided to 'route'`,
 	handler		: (ix: Interaction) =>
 		content(`
 		The command named ${ix.data?.name}with id ${ix.data?.id}is not implemented.
