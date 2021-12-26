@@ -5,38 +5,53 @@ import { InteractionResponseData } from './types.ts'
 
 function EditMessage (
 	applicationID: string,
-	interactionToken: string,
-	data: InteractionResponseData
+	init: { 
+		responseData: InteractionResponseData,
+		interactionToken: string
+	}
 ) {	
-	return SendToWebhook('PATCH', '/messages/@original', applicationID, interactionToken, data)
+	return SendToWebhook( applicationID, {
+		...init,
+		extension: '/messages/@original',
+		method: 'PATCH'
+	})
 }
 
 
 function FollowUpMessage (
 	applicationID: string,
-	interactionToken: string,
-	data: InteractionResponseData
+	init: {
+		responseData: InteractionResponseData,
+		interactionToken: string
+	}
 ) {	
-	return SendToWebhook('POST', '', applicationID, interactionToken, data)        
+	return SendToWebhook( applicationID, {
+		...init,
+		method: 'POST'
+	})
 }
 
 	
 async function SendToWebhook (
-	method: string,
-	extension: string,
 	applicationID: string,
-	interactionToken: string,
-	data: InteractionResponseData
+	init: {
+		responseData: InteractionResponseData
+		extension?: string,
+		interactionToken: string,
+		method: string,
+	}
 ) {	
-	const webhook = 'https://discord.com/api/v9/' + 'webhooks/' + applicationID + '/' + interactionToken + extension
+	const { responseData, extension, interactionToken, method } = init
+
+	const webhook = 'https://discord.com/api/v9/' + 'webhooks/' + applicationID + '/' + interactionToken + (extension || '')
 	
 	// discord needs attachments to be sent in a format called 'multipart/form-data'
 	// the FormData API creates a response in this format
-	if (data.attachment) {
+	if (responseData.attachment) {
 		const body = new FormData
-		body.append( 'attachment', data.attachment, 'attachment' )
-		delete data.attachment
-		body.append( 'payload_json', JSON.stringify(data) )
+		body.append( 'attachment', responseData.attachment, 'attachment' )
+		delete responseData.attachment
+		body.append( 'payload_json', JSON.stringify(responseData) )
 		
 		const response = await fetch( webhook, { method, body } )
 	
@@ -48,7 +63,7 @@ async function SendToWebhook (
 	const response =
 		await fetch( webhook, {
 			method,
-			body: JSON.stringify(data),
+			body: JSON.stringify(responseData),
 			headers: { 'Content-Type': 'application/json' }
 		})
 		

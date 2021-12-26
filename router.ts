@@ -16,27 +16,29 @@ function route (commands: Array<Command>) {
 	
 	return (interaction: Interaction): InteractionResponse => {
 
-		const	{ Ping
-			, ApplicationCommand
-			, MessageComponent
-			} = InteractionType
+		const {	Ping,
+			ApplicationCommand,
+			MessageComponent } = InteractionType
 		
-		const	{ Pong
-			, ImmediateReply
-			, DeferredReply
-			, ImmediateUpdate
-			, DeferredUpdate
-			} = InteractionResponseType
+		const {	Pong,
+			ImmediateReply,
+			DeferredReply,
+			ImmediateUpdate,
+			DeferredUpdate } = InteractionResponseType
 
-		const Deferred = (x: InteractionResponseData) => FollowUpMessage( interaction.application_id, interaction.token, x )
+		const Deferred = (responseData: InteractionResponseData) =>
+			FollowUpMessage( interaction.application_id, {
+				interactionToken: interaction.token,
+				responseData
+			})
 
-		// To make working with options easier, the next two lines add custom properties into the interaction.
+		// To make working with options easier, add custom properties into the interaction.
 		// userID is the unique ID given to every user by Discord
 		// input is the user-provided input to the first option, undefined when there's no input
-		const ix =
-			{ ... interaction
-			, userID : interaction.member?.user?.id || interaction.user?.id
-			, input : interaction.data?.options?.[0].value }
+		const ix = {
+			...interaction,
+			userID : interaction.member?.user?.id || interaction.user?.id,
+			input : interaction.data?.options?.[0].value }
 		
 		// find the command whose name matches the name of the command in interaction data, use defaultCommand if a match can't be found
 		const matchedCommand: Command = commands.find(command => command.name == ix.data?.name) || defaultCommand

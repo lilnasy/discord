@@ -5,7 +5,7 @@ import	{ Authorization
 	, CommandRegistration
 	, OptionType } from './types.ts'
 
-// the function 'getAccessToken' uses credentials to get a code needed to register commands
+/** uses credentials to get a code needed to register commands. */
 async function Authorize (
 	clientID: string,
 	clientSecret: string
@@ -24,12 +24,15 @@ async function Authorize (
 	return Promise.reject( await response.text() )
 }
 
-// the function 'registerCommand' gives details of a command to discord 
+/** registers commands with discord so that they appear in chat */
 async function RegisterCommand (
 	applicationID: string,
-	accessToken: string,
-	command: Command
+	init: {
+		accessToken: string,
+		command: Command
+	}
 ) {
+	const { accessToken, command } = init
 
 	// transform the simple choices (if there are some) into discord's command options structure
 	const choices =
