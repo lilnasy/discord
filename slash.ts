@@ -4,7 +4,7 @@ import { Command } from './types.ts'
 
 import { route } from './router.ts'
 
-import { verify } from './noble-ed25519/index.ts'
+import { verify } from 'https://github.com/lilnasy/noble-ed25519/raw/main/index.ts'
 
 /**
  * handler for requests containing discord interactions:
