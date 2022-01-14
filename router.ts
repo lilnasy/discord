@@ -3,6 +3,7 @@ import { FollowUpMessage } from './webhook.ts'
 import  {
 	Command,
 	Interaction,
+	InteractionHandler,
 	InteractionType,
 	InteractionResponse,
 	InteractionResponseType,
@@ -11,15 +12,14 @@ import  {
 
 export function route (commands: Array<Command>) {
 
-	const defaultCommand: Command =  {
-		name: 'unknown command',
-		description: `this gets used when the interaction sent by discord isn't intended for any of commands provided to 'route'`,
-		handler: (ix: Interaction) => content(`
-			The command named ${ix.data?.name}with id ${ix.data?.id}is not implemented.
-			This might mean that the command was registered with a mistyped name,
-			or that the command was removed from the application without being unregistered with Discord.`)
-	}
-		
+	const routeTable: Map<string, InteractionHandler> = new Map(commands.map( x => [x.name, x.handler]))
+	
+	// this gets used when the interaction sent by discord isn't intended for any of commands provided to 'route'
+	const defaultHandler: InteractionHandler =  ix =>
+		content(`
+		The command named ${ix.data?.name}with id ${ix.data?.id}is not implemented.
+		This might mean that the command was registered with a mistyped name,
+		or that the command was removed from the application without being unregistered with Discord.`)
 	
 	return (interaction: Interaction): InteractionResponse => {
 
@@ -33,7 +33,7 @@ export function route (commands: Array<Command>) {
 			ImmediateUpdate,
 			DeferredUpdate } = InteractionResponseType
 
-		const Deferred = (responseData: InteractionResponseData) =>
+		const DeferredResponse = (responseData: InteractionResponseData) =>
 			FollowUpMessage( interaction.application_id, {
 				interactionToken: interaction.token,
 				responseData
@@ -48,10 +48,10 @@ export function route (commands: Array<Command>) {
 			input : interaction.data?.options?.[0].value }
 		
 		// find the command whose name matches the name of the command in interaction data, use defaultCommand if a match can't be found
-		const matchedCommand: Command = commands.find(command => command.name == ix.data?.name) || defaultCommand
+		const matchedHandler = routeTable.get(ix.data?.name || 'default') || defaultHandler
 		
 		// use the matched command by providing the interaction to it
-		const responseData = matchedCommand.handler(ix)
+		const responseData = matchedHandler(ix)
 		
 		switch (ix.type) {
 			
@@ -66,8 +66,8 @@ export function route (commands: Array<Command>) {
 				if (responseData instanceof Promise) {
 					
 					responseData
-					.then ( data	=> Deferred(data) )
-					.catch( reason	=> Deferred(content(String(reason))) )
+					.then ( data	=> DeferredResponse(data) )
+					.catch( reason	=> DeferredResponse(content(String(reason))) )
 					
 					// in the meanwhile, let discord know we will send out actual data in a bit
 					return { type: DeferredReply }
