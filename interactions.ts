@@ -1,13 +1,12 @@
-export { content, embed }
+import  {
+        Embed,
+        InteractionResponseData
+} from './types.ts'
 
-import  { Embed
-        , InteractionResponseData
-        } from './types.ts'
-
-function content (text: string) {
-	return <InteractionResponseData> { content: text }
+export function content (text: string): InteractionResponseData {
+	return { content: text }
 }
 
-function embed (embed: Embed) {
-	return <InteractionResponseData> { embeds: [ embed ] }
+export function embed (embed: Embed): InteractionResponseData {
+	return { embeds: [ embed ] }
 }

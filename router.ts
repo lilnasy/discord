@@ -1,18 +1,25 @@
-export { route }
-
 import { content } from './interactions.ts'
-
 import { FollowUpMessage } from './webhook.ts'
+import  {
+	Command,
+	Interaction,
+	InteractionType,
+	InteractionResponse,
+	InteractionResponseType,
+	InteractionResponseData
+} from './types.ts'
 
-import  { Command
-	, Interaction
-	, InteractionType
-	, InteractionResponse
-	, InteractionResponseType
-	, InteractionResponseData
-	} from './types.ts'
+export function route (commands: Array<Command>) {
 
-function route (commands: Array<Command>) {
+	const defaultCommand: Command =  {
+		name: 'unknown command',
+		description: `this gets used when the interaction sent by discord isn't intended for any of commands provided to 'route'`,
+		handler: (ix: Interaction) => content(`
+			The command named ${ix.data?.name}with id ${ix.data?.id}is not implemented.
+			This might mean that the command was registered with a mistyped name,
+			or that the command was removed from the application without being unregistered with Discord.`)
+	}
+		
 	
 	return (interaction: Interaction): InteractionResponse => {
 
@@ -45,7 +52,6 @@ function route (commands: Array<Command>) {
 		
 		// use the matched command by providing the interaction to it
 		const responseData = matchedCommand.handler(ix)
-		
 		
 		switch (ix.type) {
 			
@@ -89,14 +95,4 @@ function route (commands: Array<Command>) {
 			}
 		}
 	}
-}
-
-const defaultCommand: Command = {
-	name		: 'unknown command',
-	description	: `this gets used when the interaction sent by discord isn't intended for any of commands provided to 'route'`,
-	handler		: (ix: Interaction) =>
-		content(`
-		The command named ${ix.data?.name}with id ${ix.data?.id}is not implemented.
-		This might mean that the command was registered with a mistyped name,
-		or that the command was removed from the application without being unregistered with Discord.`)
 }

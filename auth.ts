@@ -1,16 +1,20 @@
-export { Authorize, RegisterCommand }
+import	{
+	Authorization,
+	Command,
+	CommandRegistration,
+	OptionType
+} from './types.ts'
 
-import	{ Authorization
-	, Command
-	, CommandRegistration
-	, OptionType } from './types.ts'
+interface RegistrationInit {
+	accessToken: string
+	command: Command
+}
 
 /** uses credentials to get a code needed to register commands. */
-async function Authorize (
+export async function Authorize (
 	clientID: string,
 	clientSecret: string
-) {
-
+): Promise<Authorization> {
 	const response = await fetch( 'https://discord.com/api/v9/' + 'oauth2/token', {
 		method: 'POST',
 		body: 'grant_type=client_credentials&scope=applications.commands.update',
@@ -20,20 +24,15 @@ async function Authorize (
 		}
 	})
 	
-	if (response.ok) return <Authorization> await response.json()
+	if (response.ok) return await response.json()
 	return Promise.reject( await response.text() )
 }
 
 /** registers commands with discord so that they appear in chat */
-async function RegisterCommand (
+export async function RegisterCommand (
 	applicationID: string,
-	init: {
-		accessToken: string,
-		command: Command
-	}
-) {
-	const { accessToken, command } = init
-
+	{ accessToken, command }: RegistrationInit
+): Promise<CommandRegistration>  {
 	// transform the simple choices (if there are some) into discord's command options structure
 	const choices =
 		! command.choices
@@ -56,6 +55,6 @@ async function RegisterCommand (
 				'Authorization': 'Bearer ' + accessToken }
 		})
 	
-	if (response.ok) return <CommandRegistration> await response.json()
+	if (response.ok) return await response.json()
 	return Promise.reject( await response.text() )
 }

@@ -1,9 +1,5 @@
-export { slash }
-
 import { Command } from './types.ts'
-
 import { route } from './router.ts'
-
 import { verify } from 'https://github.com/lilnasy/noble-ed25519/raw/main/index.ts'
 
 /**
@@ -14,7 +10,7 @@ import { verify } from 'https://github.com/lilnasy/noble-ed25519/raw/main/index.
  * @param commands array of functions that take interactions and return interaction responses
  * @returns a function that takes requests and returns responses
  * */
-function slash (publicKey: string, commands: Array<Command>) {
+export function slash (publicKey: string, commands: Array<Command>) {
 
 	const router = route(commands)
 

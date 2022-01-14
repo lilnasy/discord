@@ -1,49 +1,44 @@
-export { EditMessage, FollowUpMessage }
-
 import { InteractionResponseData } from './types.ts'
 
+interface MessageInit {
+	interactionToken: string
+	responseData: InteractionResponseData
+}
 
-function EditMessage (
+interface WebhookInit extends MessageInit {
+	extension?: string
+	method: string
+}
+
+export function EditMessage (
 	applicationID: string,
-	init: { 
-		responseData: InteractionResponseData,
-		interactionToken: string
-	}
+	{ interactionToken, responseData }: MessageInit
 ) {	
 	return SendToWebhook( applicationID, {
-		...init,
+		interactionToken,
+		responseData,
 		extension: '/messages/@original',
 		method: 'PATCH'
 	})
 }
 
 
-function FollowUpMessage (
+export function FollowUpMessage (
 	applicationID: string,
-	init: {
-		responseData: InteractionResponseData,
-		interactionToken: string
-	}
-) {	
+	{ interactionToken, responseData }: MessageInit
+) {
 	return SendToWebhook( applicationID, {
-		...init,
+		interactionToken,
+		responseData,
 		method: 'POST'
 	})
 }
 
-	
 async function SendToWebhook (
 	applicationID: string,
-	init: {
-		responseData: InteractionResponseData
-		extension?: string,
-		interactionToken: string,
-		method: string,
-	}
+	{ responseData, extension = '', interactionToken, method }: WebhookInit
 ) {	
-	const { responseData, extension, interactionToken, method } = init
-
-	const webhook = 'https://discord.com/api/v9/' + 'webhooks/' + applicationID + '/' + interactionToken + (extension || '')
+	const webhook = 'https://discord.com/api/v9/' + 'webhooks/' + applicationID + '/' + interactionToken + extension
 	
 	// discord needs attachments to be sent in a format called 'multipart/form-data'
 	// the FormData API creates a response in this format
@@ -55,9 +50,8 @@ async function SendToWebhook (
 		
 		const response = await fetch( webhook, { method, body } )
 	
-		return (response.ok)
-			? response.json()
-			: Promise.reject( await response.text() )
+		if (response.ok) return await response.json()
+		return Promise.reject( await response.text() )
 	}
 	
 	const response =
@@ -67,7 +61,6 @@ async function SendToWebhook (
 			headers: { 'Content-Type': 'application/json' }
 		})
 		
-	return (response.ok)
-		? response.json()
-		: Promise.reject( await response.text() )
+	if (response.ok) return await response.json()
+	return Promise.reject( await response.text() )
 }
