@@ -11,24 +11,19 @@ import { verify } from 'https://github.com/lilnasy/noble-ed25519/raw/main/index.
  * @returns a function that takes requests and returns responses
  * */
 export function slash (publicKey: string, commands: Array<Command>) {
-
 	const router = route(commands)
-
 	// see if the interaction is signed for this app
 	// if verification passed, respond using interaction handler
 	// otherwise, respond with 401 Unauthorized
 	return async (request: Request) => {
-
-		const signature		= request.headers.get('x-signature-timestamp') || ''
-		
+		const signature		= request.headers.get('x-signature-ed25519') || ''
+		const timestamp		= request.headers.get('x-signature-timestamp') || ''
 		const interaction	= await request.text()
-		
-		const verified		= await verify(signature, signature + interaction, publicKey).catch( _ => false )
-		
-		if (verified) return new Response(
+		const verified		= await verify( signature, new TextEncoder().encode(timestamp + interaction), publicKey).catch( _ => false )
+		if (!verified) return new Response( null, { status: 401, statusText: 'Unauthorized' } )
+		return new Response(
 			JSON.stringify( router( JSON.parse(interaction) ) ),
-			{ headers: { 'Content-Type' : 'application/json' } } )
-		
-		return new Response( null, { status: 401, statusText: 'Unauthorized' } )
+			{ headers: { 'Content-Type' : 'application/json' } }
+		)
 	}
 }
